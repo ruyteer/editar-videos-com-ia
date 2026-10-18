@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<!--
+  TEMPLATE DE COMPOSIÇÃO (HyperFrames + GSAP + Three.js)
+  - Marcadores preenchidos pelo build.mjs: WORDS (palavras de words2.json, do vídeo JÁ CORTADO),
+    DUR (duração total = vídeo + ~1 s de encerramento), VDUR (duração do tight.mp4), HANDLE (@ do perfil)
+  - Procure por "EDITE AQUI" para os tempos de cada cena. Todos os tempos são do vídeo cortado.
+-->
+<style>
+@font-face { font-family: "Geist"; src: url("fonts/Geist-Medium.woff2") format("woff2"); font-weight: 500; font-display: block; }
+@font-face { font-family: "Geist"; src: url("fonts/Geist-SemiBold.woff2") format("woff2"); font-weight: 600; font-display: block; }
+@font-face { font-family: "Geist"; src: url("fonts/Geist-Bold.woff2") format("woff2"); font-weight: 700; font-display: block; }
+@font-face { font-family: "Fraunces"; src: url("fonts/fraunces-latin-600-italic.woff2") format("woff2"); font-weight: 600; font-style: italic; font-display: block; }
+
+:root { --bg: #f5f5f7; --ink: #1d1d1f; --ink2: #6e6e73; --blue: #0071e3; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1080px; height: 1920px; overflow: hidden; background: #f5f5f7; font-family: "Geist", sans-serif; color: #1d1d1f; }
+#root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--bg); }
+.layer { position: absolute; inset: 0; }
+
+/* .cam = layout (tela cheia / card) · .zoom = punch-ins com origem no rosto (EDITE AQUI: transform-origin) */
+.cam { position: absolute; inset: 0; transform-origin: 540px 960px; clip-path: inset(0px round 0px); }
+.zoom { position: absolute; inset: 0; transform-origin: 540px 900px; }
+.zoom video { position: absolute; inset: 0; width: 1080px; height: 1920px; object-fit: cover; }
+#camShadow { position: absolute; left: 270px; top: 900px; width: 540px; height: 960px; border-radius: 36px;
+  box-shadow: 0 40px 90px rgba(0,0,0,.16), 0 8px 24px rgba(0,0,0,.08); opacity: 0; }
+
+/* texto atrás da pessoa (troque o degradê para branco se a parede for escura) */
+.bw { position: absolute; left: 0; right: 0; text-align: center; font-family: "Fraunces", serif; font-style: italic; font-weight: 600;
+  letter-spacing: -0.02em; line-height: 1; opacity: 0;
+  background: linear-gradient(180deg, #1d1d1f 25%, rgba(29,29,31,.55)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+#plate { position: absolute; inset: 0; background: var(--bg); opacity: 0; }
+#plate::after { content: ""; position: absolute; left: 50%; top: 45%; width: 1400px; height: 1400px; transform: translate(-50%,-50%);
+  background: radial-gradient(closest-side, rgba(255,255,255,1), rgba(255,255,255,0)); }
+#gl { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+
+.scene { position: absolute; inset: 0; opacity: 0; }
+.serif { font-family: "Fraunces", serif; font-style: italic; font-weight: 600; letter-spacing: -0.02em;
+  background: linear-gradient(180deg, #1d1d1f 30%, rgba(29,29,31,.58)); -webkit-background-clip: text; background-clip: text; color: transparent; padding: 0 .08em; }
+.glass { background: rgba(255,255,255,.84); border: 1px solid rgba(0,0,0,.06); border-radius: 44px;
+  box-shadow: 0 30px 80px rgba(0,0,0,.16), 0 4px 14px rgba(0,0,0,.06); backdrop-filter: blur(30px); }
+.block { position: absolute; left: 0; right: 0; text-align: center; transform-origin: 540px 200px; }
+.s { font-weight: 500; font-size: 62px; color: var(--ink2); }
+.big { font-weight: 600; font-size: 150px; letter-spacing: -0.04em; line-height: 1.05; }
+
+.card { position: absolute; left: 60px; top: 170px; min-height: 150px; padding: 26px 34px; display: flex; align-items: center; gap: 26px; opacity: 0; }
+.card .num { width: 88px; height: 88px; border-radius: 26px; background: #1d1d1f; color: #fff; font-weight: 700; font-size: 42px; display: grid; place-items: center; flex: none; }
+.card .tx small { display: block; font-size: 30px; font-weight: 600; color: var(--ink2); letter-spacing: .08em; text-transform: uppercase; }
+.card .tx b { display: block; font-size: 52px; font-weight: 600; letter-spacing: -0.02em; }
+
+#hEnd { position: absolute; left: 0; right: 0; top: 780px; text-align: center; }
+#hEnd .a { font-weight: 600; font-size: 104px; letter-spacing: -0.035em; }
+#hEnd .serif { font-size: 150px; line-height: 1.05; }
+#pill { position: absolute; left: 190px; top: 1180px; width: 700px; height: 150px; opacity: 0; }
+#pill svg { position: absolute; inset: 0; overflow: visible; }
+#pill .in { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 62px; font-weight: 600; letter-spacing: -0.02em; }
+
+/* legendas: bloco inteiro com fade (nunca palavra por palavra) */
+#caps { position: absolute; left: 50px; right: 50px; top: 1440px; height: 150px; }
+.chunk { position: absolute; inset: 0; display: flex; justify-content: center; align-items: baseline; flex-wrap: wrap; gap: 0 18px; opacity: 0; }
+.cw { display: inline-block; font-weight: 600; font-size: 66px; color: #fff; letter-spacing: -0.015em; text-shadow: 0 2px 22px rgba(0,0,0,.5), 0 1px 3px rgba(0,0,0,.4); }
+.cw.k { font-family: "Fraunces", serif; font-style: italic; font-size: 80px; text-shadow: none;
+  background: linear-gradient(180deg, #fff 35%, rgba(255,255,255,.66)); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 2px 14px rgba(0,0,0,.5)); padding: 0 .06em; }
+</style>
+<script type="importmap">{ "imports": { "three": "./vendor/three.module.js", "three/addons/": "./vendor/" } }</script>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1920" data-duration="{{DUR}}" data-fps="30">
+
+  <div id="camShadow"></div>
+  <div class="cam"><div class="zoom"><video id="vid" class="clip" src="tight.mp4" muted playsinline data-start="0" data-duration="{{VDUR}}" data-track-index="1"></video></div></div>
+
+  <div class="layer" id="behind">
+    <!-- EDITE AQUI: palavra atrás da pessoa (ajuste top até o cabelo cobrir só a borda de baixo) -->
+    <div class="bw" id="bw1" style="top:150px;font-size:300px;">palavra</div>
+  </div>
+
+  <!-- recorte da pessoa (gere com: npx hyperframes remove-background tight.mp4 -o person.webm --quality best).
+       Se não for usar texto atrás, apague este bloco. -->
+  <div class="cam"><div class="zoom"><video id="pvid" class="clip" src="person.webm" muted playsinline data-start="0" data-duration="{{VDUR}}" data-track-index="2"></video></div></div>
+
+  <div id="plate"></div>
+  <canvas id="gl" width="1080" height="1920"></canvas>
+
+  <div class="layer" id="ui">
+    <!-- EDITE AQUI: cena só de texto -->
+    <div class="scene" id="scA"><div class="block" style="top:720px">
+      <div class="s" id="aS">frase de apoio</div>
+      <div class="big" id="aB">palavra</div>
+      <div id="aC"><span class="serif" style="font-size:140px">de ênfase</span></div>
+    </div></div>
+
+    <!-- EDITE AQUI: card numerado -->
+    <div class="card glass" id="k1"><div class="num">1</div><div class="tx"><small>passo</small><b>título do <span class="serif">passo</span></b></div></div>
+
+    <div class="scene" id="scEnd">
+      <div id="hEnd"><span class="a">frase</span><br><span class="serif">final</span></div>
+      <div id="pill">
+        <svg viewBox="0 0 700 150"><rect id="hRect" x="3" y="3" width="694" height="144" rx="72" fill="rgba(255,255,255,.8)" stroke="#1d1d1f" stroke-width="4" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/></svg>
+        <div class="in">{{HANDLE}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="caps"></div>
+  <audio id="voice" src="tight.mp4" data-start="0" data-duration="{{VDUR}}" data-track-index="10" data-volume="1"></audio>
+
+<script src="vendor/gsap.min.js"></script>
+<script>
+(function () {
+  const WORDS = {{WORDS}};
+  const tl = gsap.timeline({ paused: true });
+  const P = (s) => document.querySelector(s);
+
+  // ---------- LEGENDAS ----------
+  // EDITE AQUI: janelas sem legenda (cenas de texto, telas divididas, encerramento)
+  const HIDE = [[10.0, 12.0], [{{VDUR}}, 999]];
+  // EDITE AQUI: palavras-chave (minúsculas, sem pontuação) em serifada
+  const KEY = new Set(["exemplo"]);
+  const hidden = (t) => HIDE.some(([a, b]) => t >= a - 0.01 && t < b);
+  const clean = (w) => w.replace(/[.,!…]+$/g, "");
+  const chunks = []; let cur = null;
+  WORDS.forEach((w, i) => {
+    if (hidden(w.s)) { cur = null; return; }
+    const prev = WORDS[i - 1];
+    const brk = !cur || cur.words.length >= 3 || /[,.?!]$/.test(prev ? prev.w : "") || (prev && w.s - prev.e > 0.35);
+    if (brk) { cur = { words: [] }; chunks.push(cur); }
+    cur.words.push(w);
+  });
+  // junta blocos curtos demais (< 0,5 s) — evita legenda presa/piscando
+  for (let i = 0; i < chunks.length - 1; i++) {
+    const c = chunks[i], n = chunks[i + 1];
+    if (n.words[0].s - c.words[0].s < 0.5 && c.words.length + n.words.length <= 4 && !HIDE.some(([h]) => h > c.words[0].s && h <= n.words[0].s)) {
+      c.words = c.words.concat(n.words); chunks.splice(i + 1, 1); i--;
+    }
+  }
+  const capsEl = P("#caps");
+  chunks.forEach((c, ci) => {
+    const el = document.createElement("div"); el.className = "chunk";
+    c.words.forEach((w) => { const s = document.createElement("span"); const t = clean(w.w);
+      s.className = "cw" + (KEY.has(t.toLowerCase()) ? " k" : ""); s.textContent = t; el.appendChild(s); });
+    capsEl.appendChild(el);
+    const start = c.words[0].s, nxt = chunks[ci + 1];
+    let end = c.words[c.words.length - 1].e + 0.5;
+    if (nxt && nxt.words[0].s < end + 0.6) end = nxt.words[0].s;
+    const hz = HIDE.find(([a]) => a > start); if (hz && end > hz[0]) end = hz[0];
+    const tIn = Math.max(0, start - 0.04);
+    const dIn = Math.max(0.06, Math.min(0.2, (end - tIn) * 0.4));
+    const tOut = Math.max(tIn + dIn, end - 0.12);
+    const dOut = Math.max(0.04, Math.min(0.1, end - tOut));
+    if (ci > 0) tl.fromTo(el, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: dIn, ease: "power2.out", immediateRender: false }, tIn);
+    tl.fromTo(el, { opacity: 1, y: 0 }, { opacity: 0, y: -8, duration: dOut, ease: "power1.in", immediateRender: false }, tOut);
+  });
+  if (capsEl.firstElementChild) capsEl.firstElementChild.style.opacity = 1;
+
+  // ---------- CÂMERA ----------
+  const punch = (t, S) => tl.fromTo(".zoom", { scale: S * 1.07 }, { scale: S, duration: 0.32, ease: "power2.out", immediateRender: false }, t);
+  tl.fromTo(".zoom", { scale: 1 }, { scale: 1.05, duration: 3, ease: "none", immediateRender: false }, 0);
+  // EDITE AQUI: [tempo da troca de frase, escala] alternando aberto (1.0) e close (1.12–1.2)
+  [[3.0, 1.15], [5.0, 1.0]].forEach(([t, s]) => punch(t, s));
+
+  function split(t0, t1) { // vídeo vira card embaixo; topo livre para ilustração
+    tl.set(".zoom", { scale: 1 }, t0);
+    tl.fromTo(".cam", { scale: 1, y: 0, clipPath: "inset(0px round 0px)" },
+      { scale: 0.5, y: 420, clipPath: "inset(0px round 72px)", duration: 0.55, ease: "power3.inOut", immediateRender: false }, t0);
+    tl.fromTo("#camShadow", { opacity: 0 }, { opacity: 1, duration: 0.3, immediateRender: false }, t0 + 0.3);
+    tl.set(".cam", { scale: 1, y: 0, clipPath: "inset(0px round 0px)" }, t1);
+    tl.set("#camShadow", { opacity: 0 }, t1);
+  }
+  const scene = (sel, t0, t1) => { tl.set(sel, { opacity: 1 }, t0); if (t1) tl.set(sel, { opacity: 0 }, t1); };
+  const rise = (sel, t, d = 0.3) => tl.fromTo(sel, { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: d, ease: "power3.out", immediateRender: false }, t);
+  const pop = (sel, t0, t1) => { tl.fromTo(sel, { opacity: 0, y: -24, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, duration: 0.36, ease: "back.out(1.6)", immediateRender: false }, t0);
+    if (t1) tl.to(sel, { opacity: 0, y: -16, duration: 0.16, ease: "power2.in" }, t1 - 0.16); };
+
+  // ---------- CENAS (EDITE AQUI) ----------
+  // texto atrás
+  tl.fromTo("#bw1", { opacity: 0, scale: 1.14, filter: "blur(14px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.34, ease: "power3.out", immediateRender: false }, 1.0);
+  tl.to("#bw1", { opacity: 0, duration: 0.15 }, 2.8);
+  // cena de texto
+  scene("#plate", 10.0, 12.0); scene("#scA", 10.0, 12.0);
+  tl.fromTo("#scA .block", { scale: 1.07 }, { scale: 1, duration: 0.32, ease: "power2.out", immediateRender: false }, 10.0);
+  rise("#aS", 10.0, 0.24); rise("#aB", 10.4); rise("#aC", 11.0);
+  // card
+  pop("#k1", 6.0, 9.5);
+  // exemplo de tela dividida: split(13.0, 16.0);
+  // encerramento
+  scene("#plate", {{VDUR}}); scene("#scEnd", {{VDUR}});
+  rise("#hEnd", {{VDUR}} + 0.02, 0.28);
+  tl.fromTo("#pill", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.32, ease: "power3.out", immediateRender: false }, {{VDUR}} + 0.26);
+  tl.to("#hRect", { attr: { "stroke-dashoffset": 0 }, duration: 0.5, ease: "power2.inOut" }, {{VDUR}} + 0.3);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines["main"] = tl;
+})();
+</script>
+
+<script type="module">
+// ---------- 3D (Three.js) — renderize SÓ a partir do tempo (hf-seek) ----------
+import * as THREE from "three";
+import { RoomEnvironment } from "three/addons/RoomEnvironment.js";
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("gl"), alpha: true, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(1080, 1920, false);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.outputColorSpace = THREE.SRGBColorSpace;
+const scene = new THREE.Scene();
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+const camera = new THREE.PerspectiveCamera(30, 1080 / 1920, 0.1, 100); camera.position.set(0, 0, 16);
+const key = new THREE.DirectionalLight(0xffffff, 1.4); key.position.set(3, 5, 8); scene.add(key);
+const U = 2 * 16 * Math.tan(THREE.MathUtils.degToRad(15)) / 1920;
+const px = (x, y) => new THREE.Vector3((x - 540) * U, (960 - y) * U, 0); // pixel do quadro -> mundo
+
+// exemplo: moeda metálica com "R$"
+const c = document.createElement("canvas"); c.width = c.height = 512; const g = c.getContext("2d");
+const gr = g.createRadialGradient(200, 180, 40, 256, 256, 260); gr.addColorStop(0, "#fafafa"); gr.addColorStop(1, "#c9cad0");
+g.fillStyle = gr; g.fillRect(0, 0, 512, 512); g.fillStyle = "#3a3a3c"; g.font = "600 190px Arial"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("R$", 256, 268);
+const tex = new THREE.CanvasTexture(c); tex.center.set(0.5, 0.5); tex.rotation = Math.PI / 2; tex.colorSpace = THREE.SRGBColorSpace;
+const side = new THREE.MeshPhysicalMaterial({ color: 0xd9dade, metalness: 1, roughness: 0.22 });
+const face = new THREE.MeshPhysicalMaterial({ map: tex, metalness: 0.75, roughness: 0.3, clearcoat: 0.8 });
+const coin = new THREE.Group(); const m = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.16, 96), [side, face, face]);
+m.rotation.x = Math.PI / 2; coin.add(m); coin.visible = false; scene.add(coin);
+
+const clamp = (v) => Math.max(0, Math.min(1, v));
+const outBack = (p, s = 1.6) => 1 + (s + 1) * Math.pow(p - 1, 3) + s * Math.pow(p - 1, 2);
+const outExpo = (p) => (p >= 1 ? 1 : 1 - Math.pow(2, -10 * p));
+function renderAt(t) {
+  // EDITE AQUI: janela e posição do objeto
+  coin.visible = t >= 1.0 && t < 2.8;
+  if (coin.visible) {
+    const p = clamp((t - 1.0) / 0.5);
+    coin.position.copy(px(900, 700 + (1 - outExpo(p)) * 300));
+    coin.scale.setScalar(Math.max(0.001, 0.55 * outBack(p)));
+    coin.rotation.set(0.15, (1 - outExpo(p)) * Math.PI * 5 + 0.3 * Math.sin(t * 2), -0.1);
+  }
+  renderer.render(scene, camera);
+}
+window.addEventListener("hf-seek", (e) => renderAt(e.detail.time));
+renderAt(window.__hfThreeTime || 0);
+</script>
+</div>
+</body>
+</html>

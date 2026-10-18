@@ -1,0 +1,22 @@
+# mídia e saídas (nunca suba seus vídeos)
+*.mp4
+*.mov
+*.webm
+*.mkv
+*.wav
+*.mp3
+snaps/
+sfx/
+sfxn/
+words*.json
+keep.json
+cues.json
+
+# dependências e build
+node_modules/
+kit/template/public/
+
+# segredos
+.env
+*.key
+secrets*

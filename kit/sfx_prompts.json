@@ -1,0 +1,21 @@
+{
+  "whoosh":   ["soft airy whoosh transition, smooth, clean, short, dry, no music", 0.7],
+  "swish":    ["quick subtle swish of text sliding in, light air, short, dry, no music", 0.5],
+  "pop":      ["soft UI bubble pop, gentle, clean, iOS style, loud, clear, close-up, short, dry, no music", 0.4],
+  "tick":     ["tiny crisp UI tick click, glassy, loud, clear, close-up, short, dry, no music", 0.3],
+  "thud":     ["deep soft cinematic impact thud for title reveal, warm, short, dry, no music", 0.9],
+  "chime":    ["gentle success chime, two soft glassy notes, Apple-like, short, dry, no music", 1.0],
+  "shimmer":  ["delicate soft shimmer sparkle for logo reveal, airy, short, dry, no music", 1.2],
+  "click":    ["soft mouse click, clean, close-up, loud, clear, short, dry, no music", 0.3],
+  "coin":     ["single bright coin clink, metallic, clean, close-up, short, dry, no music", 0.5],
+  "typing":   ["soft quick smartphone keyboard typing, three taps, close-up, short, dry, no music", 0.7],
+  "send":     ["message sent swoosh, iOS style, clean, short, dry, no music", 0.5],
+  "collapse": ["quick soft zip slide, elements snapping together, clean, short, dry, no music", 0.6],
+  "error":    ["soft muted error buzz, UI denial sound, gentle, loud, clear, short, dry, no music", 0.5],
+  "zoom":     ["fast camera zoom whoosh in, short, dry, no music", 0.5],
+  "whip":     ["fast whip pan swoosh transition, short, dry, no music", 0.5],
+  "strike":   ["quick marker strike-through scribble, short, dry, no music", 0.4],
+  "sparkle":  ["magical sparkle twinkle, bright, short, dry, no music", 0.8],
+  "poweron":  ["big LED screen powering on, electric hum and bright digital zap, short, dry, no music", 1.0],
+  "bounce":   ["basketball bouncing once on a hand, rubber thump, close-up, short, dry, no music", 0.6]
+}

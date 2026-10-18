@@ -13,7 +13,7 @@ sonoros — tudo sincronizado com a sua fala. Sem Premiere, sem CapCut, sem nenh
 
 ### 1. Baixe este repositório
 ```bash
-git clone https://github.com/<este-repo>.git
+git clone https://github.com/ruyteer/editar-videos-com-ia.git
 cd editar-videos-com-ia
 ```
 Ou clique em **Code → Download ZIP** e descompacte.
